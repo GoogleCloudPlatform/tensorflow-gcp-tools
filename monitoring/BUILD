@@ -37,3 +37,29 @@ cc_test(
         "@com_google_googletest//:gtest_main",
     ] + gcp_monitoring_grpc_deps() + gcp_monitoring_proto_deps(),
 )
+
+cc_library(
+    name = "stackdriver_exporter",
+    srcs = [
+        "stackdriver_exporter.cc",
+    ],
+    hdrs = [
+        "stackdriver_exporter.h",
+    ],
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = [
+        ":stackdriver_client",
+        "@org_tensorflow//tensorflow/core:lib",
+        "@org_tensorflow//tensorflow/core/kernels/batching_util:periodic_function_dynamic",
+    ],
+)
+
+cc_library(
+    name = "stackdriver_exporter_protos",
+    visibility = [
+        "//visibility:public",
+    ],
+    deps = gcp_monitoring_proto_deps(),
+)
