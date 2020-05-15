@@ -74,3 +74,10 @@ apple_support_dependencies()
 load("@upb//bazel:repository_defs.bzl", "bazel_version_repository")
 
 bazel_version_repository(name = "bazel_version")
+
+load(
+    "//monitoring:repository_rules.bzl",
+    "config_googleapis",
+)
+
+config_googleapis()
