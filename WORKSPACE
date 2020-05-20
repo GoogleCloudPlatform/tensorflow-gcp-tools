@@ -1,4 +1,4 @@
-workspace(name = "com_github_GoogleCloudPlatform_tensorflow_gcp_tools")
+workspace(name = "com_github_googlecloudplatform_tensorflow_gcp_tools")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
