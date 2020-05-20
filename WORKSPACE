@@ -1,4 +1,4 @@
-workspace(name = "com_github_GoogleCloudPlatform_tensorflow_gcp_tools")
+workspace(name = "com_github_googlecloudplatform_tensorflow_gcp_tools")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
@@ -29,10 +29,10 @@ http_archive(
 #    and update the sha256 with the result.
 http_archive(
     name = "org_tensorflow",
-    sha256 = "4884940ee7f6531ee7f0c65b2a7d06360f9db971b6bbf08903ba21dc269f8945",
-    strip_prefix = "tensorflow-6ad1b2ed49143bdf4f6152a61fb8e810bd940fb4",
+    sha256 = "50f34a7bff1422f7cdedf171d247cbff0bbbf5d08a9f7784d8250c7cdfe0e640",
+    strip_prefix = "tensorflow-e3eb5101bb119b9548e71b19b0788f41a35b2067",
     urls = [
-        "https://github.com/tensorflow/tensorflow/archive/6ad1b2ed49143bdf4f6152a61fb8e810bd940fb4.tar.gz",
+        "https://github.com/tensorflow/tensorflow/archive/e3eb5101bb119b9548e71b19b0788f41a35b2067.tar.gz",
     ],
 )
 
