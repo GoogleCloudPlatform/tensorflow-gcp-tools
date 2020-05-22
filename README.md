@@ -5,6 +5,8 @@ This repository provides tools that make it easier to run
 [Google Cloud Platform (GCP)](https://cloud.google.com/).
 
 - [Monitoring (Stackdriver Support)](monitoring/README.md)
+- TensorFlow Enterprise Addons
+  - CloudTuner
 
 # License
 
