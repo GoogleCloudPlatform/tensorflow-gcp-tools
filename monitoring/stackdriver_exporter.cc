@@ -16,6 +16,7 @@ limitations under the License.
 #include "monitoring/stackdriver_exporter.h"
 
 #include "monitoring/stackdriver_client.h"
+#include "monitoring/stackdriver_config.h"
 #include "tensorflow/core/lib/monitoring/collected_metrics.h"
 #include "tensorflow/core/platform/logging.h"
 #include "tensorflow/core/util/env_var.h"
@@ -35,18 +36,9 @@ bool StackdriverExporterEnabled() {
 }
 
 bool ShouldExport(const PointSet& point_set) {
-  static const std::set<std::string>* kWhitelist = new std::set<std::string>{
-      "/tensorflow/core/graph_optimization_usecs",
-      "/tensorflow/core/graph_run_time_usecs_histogram",
-      "/tensorflow/data/bytes_fetched",
-      "/tensorflow/data/getnext_duration",
-      "/tensorflow/data/getnext_period",
-      "/tensorflow/data/optimization",
-  };
-  if (kWhitelist->find(point_set.metric_name) == kWhitelist->end()) {
+  if (!StackdriverConfig::Get()->IsWhitelisted(point_set.metric_name)) {
     return false;
   }
-
   size_t non_empty_points = 0;
   for (const auto& point : point_set.points) {
     switch (point->value_type) {
@@ -86,7 +78,7 @@ void StackdriverExporter::PeriodicallyExportMetrics() {
     return;
   }
   LOG(INFO) << "Start exporting metrics periodically every " << kIntervalMicros
-            << " us.";
+            << " us. " << StackdriverConfig::Get()->DebugString();
   periodic_function_ = std::make_unique<serving::PeriodicFunction>(
       [this]() { ExportMetrics(); }, kIntervalMicros);
 }

@@ -39,6 +39,19 @@ cc_test(
 )
 
 cc_library(
+    name = "stackdriver_config",
+    srcs = [
+        "stackdriver_config.cc",
+    ],
+    hdrs = [
+        "stackdriver_config.h",
+    ],
+    deps = [
+        "@org_tensorflow//tensorflow/core:lib",
+    ],
+)
+
+cc_library(
     name = "stackdriver_exporter",
     srcs = [
         "stackdriver_exporter.cc",
@@ -51,6 +64,7 @@ cc_library(
     ],
     deps = [
         ":stackdriver_client",
+        ":stackdriver_config",
         "@org_tensorflow//tensorflow/core:lib",
         "@org_tensorflow//tensorflow/core/kernels/batching_util:periodic_function_dynamic",
     ],
