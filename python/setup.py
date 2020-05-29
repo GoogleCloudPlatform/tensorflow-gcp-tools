@@ -42,7 +42,7 @@ setuptools.setup(
     ),
     install_requires=dependencies.make_required_install_packages(),
     extras_require={
-        'test': dependencies.make_required_test_packages()
+        'tests': dependencies.make_required_test_packages()
     },
     packages=setuptools.find_packages(),
     package_data={'tensorflow_enterprise_addons': ['cloudtuner/api/*.json']},
