@@ -24,6 +24,4 @@ def make_required_install_packages():
 
 
 def make_required_test_packages():
-  return [
-      'mock',
-  ]
+  return ['mock', 'tensorflow-datasets']
