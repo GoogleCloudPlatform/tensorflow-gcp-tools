@@ -30,22 +30,43 @@ loader = importlib.machinery.SourceFileLoader(
 version = types.ModuleType(loader.name)
 loader.exec_module(version)
 
+with open('README.md') as f:
+  long_description = f.read()
 
 setuptools.setup(
-    name='tensorflow-enterprise-addons',
-    version=version.__version__,
-    license='Apache 2.0',
-    description=(
-        'Client-side library suites of TensorFlow Enteprise on Google Cloud '
-        'Platform (GCP), which implements a special integration with GCP '
-        'behind the TensorFlow APIs.'
-    ),
-    install_requires=dependencies.make_required_install_packages(),
-    extras_require={
-        'tests': dependencies.make_required_test_packages()
-    },
-    packages=setuptools.find_packages(),
-    package_data={'tensorflow_enterprise_addons': ['cloudtuner/api/*.json']},
-    include_package_data=True,
     author='Google LLC',
+    classifiers=[
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: Apache Software License',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Software Development',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+    ],
+    description=(
+        'Client-side library suite of TensorFlow Enterprise on Google Cloud'
+        'Platform (GCP), which implements specific integration between GCP and'
+        'TensorFlow APIs.'),
+    extras_require={'tests': dependencies.make_required_test_packages()},
+    include_package_data=True,
+    install_requires=dependencies.make_required_install_packages(),
+    keywords='tensorflow enterprise gcp google cloud addons cloudAI deep learning hyperparameter tuning',
+    license='Apache 2.0',
+    name='tensorflow-enterprise-addons',
+    package_data={'tensorflow_enterprise_addons': ['cloudtuner/api/*.json']},
+    packages=setuptools.find_packages(),
+    project_urls={
+        'Source': 'https://github.com/GoogleCloudPlatform/tensorflow-gcp-tools',
+    },
+    python_requires='>=3.5, <4',
+    url='https://github.com/GoogleCloudPlatform/tensorflow-gcp-tools',
+    version=version.__version__,
 )

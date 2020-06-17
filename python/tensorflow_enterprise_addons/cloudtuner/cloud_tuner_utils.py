@@ -110,7 +110,6 @@ def convert_study_config_to_objective(
 def convert_study_config_to_hps(
     study_config):
   """Converts CAIP Optimizer study_config to HyperParameters."""
-  # TODO(b/151370477) Support conditional hyperparameters conversion.
   if not study_config.get('parameters'):
     raise ValueError('Parameters are not found in the study_config: ',
                      study_config)
