@@ -170,6 +170,10 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     self._assert_results_summary(tuner.results_summary)
 
   def testCloudTunerDatasets(self):
+    # Because dataset is defined in different session than model.comiple()
+    # and tuner.run_trial(), need to execute  need to execute eagerly.
+    tf.compat.v1.enable_eager_execution()
+
     train_dataset = tf.data.Dataset.from_tensor_slices(
         (self._x, self._y)).batch(128).cache().prefetch(1000)
     eval_dataset = tf.data.Dataset.from_tensor_slices(
