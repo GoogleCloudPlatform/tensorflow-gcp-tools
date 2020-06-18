@@ -23,7 +23,6 @@ import time
 import kerastuner
 import tensorflow as tf
 from tensorflow import keras
-import tensorflow_datasets as tfds
 from tensorflow_enterprise_addons import cloudtuner
 
 # The project id to use to run tests.
@@ -171,30 +170,10 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     self._assert_results_summary(tuner.results_summary)
 
   def testCloudTunerDatasets(self):
-    (ds_train, ds_test), ds_info = tfds.load(
-        'mnist',
-        split=['train', 'test'],
-        shuffle_files=True,
-        as_supervised=True,
-        with_info=True,
-    )
-
-    ds_train = ds_train.map(
-        _normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    ds_train = ds_train.cache()
-    ds_train = ds_train.shuffle(ds_info.splits['train'].num_examples)
-    ds_train = ds_train.batch(128)
-    ds_train = ds_train.prefetch(tf.data.experimental.AUTOTUNE)
-
-    ds_test = ds_test.map(
-        _normalize_img, num_parallel_calls=tf.data.experimental.AUTOTUNE)
-    ds_test = ds_test.batch(128)
-    ds_test = ds_test.cache()
-    ds_test = ds_test.prefetch(tf.data.experimental.AUTOTUNE)
-
-    # The input shape of images loaded from TF Datasets is different from
-    # that of the Keras Datasets.
-    self._input_shape = (28, 28, 1)
+    train_dataset = tf.data.Dataset.from_tensor_slices(
+        (self._x, self._y)).batch(128).cache().prefetch(1000)
+    eval_dataset = tf.data.Dataset.from_tensor_slices(
+        (self._val_x, self._val_y)).batch(128).cache().prefetch(1000)
 
     study_id = '{}_dataset'.format(_STUDY_ID_BASE)
     tuner = cloudtuner.CloudTuner(
@@ -213,11 +192,11 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
         r'(?=.*num_layers \(Int\).*)')
 
     tuner.search(
-        x=ds_train,
+        x=train_dataset,
         epochs=2,
         steps_per_epoch=20,
         validation_steps=10,
-        validation_data=ds_test)
+        validation_data=eval_dataset)
 
     self._assert_results_summary(tuner.results_summary)
 
