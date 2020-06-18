@@ -68,6 +68,10 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     super(CloudTunerIntegrationTest, self).setUp()
     self._input_shape = (28, 28)
 
+  def tearDown(self):
+    super(CloudTunerIntegrationTest, self).tearDown()
+    tf.keras.backend.clear_session()
+
   def _single_tuner_dist(self, study_id, tuner_id):
     """Instantiate a CloudTuner for distributed tuning and set up its tuner_id.
 
@@ -118,7 +122,9 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     tuner.search(
         x=self._x,
         y=self._y,
-        epochs=5,
+        epochs=2,
+        steps_per_epoch=20,
+        validation_steps=10,
         validation_data=(self._val_x, self._val_y),
         verbose=0)
     return tuner
@@ -157,7 +163,9 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     tuner.search(
         x=self._x,
         y=self._y,
-        epochs=10,
+        epochs=2,
+        steps_per_epoch=20,
+        validation_steps=10,
         validation_data=(self._val_x, self._val_y))
 
     self._assert_results_summary(tuner.results_summary)
@@ -204,7 +212,12 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
         r'.*Search space summary(?=.*learning_rate \(Float\))'
         r'(?=.*num_layers \(Int\).*)')
 
-    tuner.search(x=ds_train, epochs=10, validation_data=ds_test)
+    tuner.search(
+        x=ds_train,
+        epochs=2,
+        steps_per_epoch=20,
+        validation_steps=10,
+        validation_data=ds_test)
 
     self._assert_results_summary(tuner.results_summary)
 
@@ -262,9 +275,9 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     tuner.search(
         x=self._x,
         y=self._y,
-        epochs=5,
-        steps_per_epoch=2000,
-        validation_steps=1000,
+        epochs=2,
+        steps_per_epoch=20,
+        validation_steps=10,
         validation_data=(self._val_x, self._val_y))
 
     self._assert_results_summary(tuner.results_summary)
