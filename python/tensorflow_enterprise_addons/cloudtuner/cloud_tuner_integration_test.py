@@ -20,6 +20,7 @@ from multiprocessing import dummy
 import os
 import re
 import time
+import unittest
 import kerastuner
 import tensorflow as tf
 from tensorflow import keras
@@ -268,6 +269,7 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
 
     self._assert_results_summary(tuner.results_summary)
 
+  @unittest.skip('Disabled to investigate thread-safety.')
   def testCloudTunerDistributedTuning(self):
     study_id = '{}_dist'.format(_STUDY_ID_BASE)
     tuners = [
