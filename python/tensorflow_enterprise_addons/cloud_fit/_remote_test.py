@@ -25,6 +25,11 @@ import tensorflow as tf
 from tensorflow_enterprise_addons.cloud_fit import _client
 from tensorflow_enterprise_addons.cloud_fit import _remote
 
+# If input dataset is created outside tuner.search(),
+# it requires eager execution even in in TF 1.x.
+if tf.version.VERSION.split('.')[0] == '1':
+  tf.compat.v1.enable_eager_execution()
+
 MIRRORED_STRATEGY_NAME = _remote.MIRRORED_STRATEGY_NAME
 MULTI_WORKER_MIRRORED_STRATEGY_NAME = _remote.MULTI_WORKER_MIRRORED_STRATEGY_NAME
 
