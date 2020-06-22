@@ -12,5 +12,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Init for cloud_fit package."""
-
-from tensorflow_enterprise_addons.cloud_fit._client import cloud_fit

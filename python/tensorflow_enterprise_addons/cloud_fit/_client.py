@@ -29,10 +29,15 @@ from googleapiclient import discovery
 import tensorflow as tf
 import google.auth
 
-from tensorflow_enterprise_addons.cloud_fit import _remote
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = tf.distribute.experimental.MultiWorkerMirroredStrategy.__name__
+MIRRORED_STRATEGY_NAME = tf.distribute.MirroredStrategy.__name__
 
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = _remote.MULTI_WORKER_MIRRORED_STRATEGY_NAME
-SUPPORTED_DISTRIBUTION_STRATEGIES = _remote.SUPPORTED_DISTRIBUTION_STRATEGIES
+SUPPORTED_DISTRIBUTION_STRATEGIES = {
+    MULTI_WORKER_MIRRORED_STRATEGY_NAME:
+        tf.distribute.experimental.MultiWorkerMirroredStrategy,
+    MIRRORED_STRATEGY_NAME:
+        tf.distribute.MirroredStrategy,
+}
 
 # Constants for default cluster spec
 DEFAULT_INSTANCE_TYPE = 'n1-standard-4'

@@ -142,11 +142,7 @@ def _delete_dir(path):
     tf.io.gfile.rmtree(path)
 
 
-def entry_point():
+if __name__ == '__main__':
   flags.mark_flag_as_required('remote_dir')
   flags.mark_flag_as_required('distribution_strategy')
   app.run(main)
-
-
-if __name__ == '__main__':
-  entry_point()
