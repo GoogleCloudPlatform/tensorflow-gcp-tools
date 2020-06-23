@@ -16,11 +16,11 @@
 
 import contextlib
 import io
-from multiprocessing import dummy
+import multiprocessing
 import os
+import random
 import re
 import time
-import unittest
 import kerastuner
 import tensorflow as tf
 from tensorflow import keras
@@ -51,90 +51,72 @@ _HPS.Int('num_layers', 2, 10)
 _NUM_PARALLEL_TRIALS = 4
 
 
-def _normalize_img(image, label):
-  """Normalizes images: `uint8` -> `float32`."""
-  return tf.cast(image, tf.float32) / 255., label
+def _load_data():
+  """Loads and prepares data."""
+  (x, y), (val_x, val_y) = keras.datasets.mnist.load_data()
+  x = x.astype('float32') / 255.
+  val_x = val_x.astype('float32') / 255.
+
+  return ((x[:10000], y[:10000]), (val_x, val_y))
 
 
-class CloudTunerIntegrationTest(tf.test.TestCase):
+def _build_model(hparams):
+  # Note that CloudTuner does not support adding hyperparameters in
+  # the model building function. Instead, the search space is configured
+  # by passing a hyperparameters argument when instantiating (constructing)
+  # the tuner.
+  model = keras.Sequential()
+  model.add(keras.layers.Flatten(input_shape=(28, 28)))
 
-  @classmethod
-  def setUpClass(cls):
-    super(CloudTunerIntegrationTest, cls).setUpClass()
-    # Prepare data
-    (x, y), (val_x, val_y) = keras.datasets.mnist.load_data()
-    x = x.astype('float32') / 255.
-    val_x = val_x.astype('float32') / 255.
+  # Build the model with number of layers from the hyperparameters
+  for _ in range(hparams.get('num_layers')):
+    model.add(keras.layers.Dense(units=64, activation='relu'))
+  model.add(keras.layers.Dense(10, activation='softmax'))
 
-    cls._x = x[:10000]
-    cls._y = y[:10000]
-    cls._val_x = val_x
-    cls._val_y = val_y
+  # Compile the model with learning rate from the hyperparameters
+  model.compile(
+      optimizer=keras.optimizers.Adam(lr=hparams.get('learning_rate')),
+      loss='sparse_categorical_crossentropy',
+      metrics=['acc'])
+  return model
 
-  def setUp(self):
-    super(CloudTunerIntegrationTest, self).setUp()
-    self._input_shape = (28, 28)
 
-  def tearDown(self):
-    super(CloudTunerIntegrationTest, self).tearDown()
-    tf.keras.backend.clear_session()
+def _dist_search_fn(temp_dir, study_id, tuner_id):
+  """Multi-process safe tuner instantiation and tuner.search()."""
 
-  def _single_tuner_dist(self, study_id, tuner_id):
-    """Instantiate a CloudTuner for distributed tuning and set up its tuner_id.
+  # Jitter instantiation so as to avoid contention.
+  time.sleep(random.randint(0, 10))
 
-    Args:
-      study_id: String.
-      tuner_id: Integer.
+  # Dataset must be loaded independently in sub-process.
+  (x, y), (val_x, val_y) = _load_data()
 
-    Returns:
-      A CloudTuner instance.
-    """
-    tuner = cloudtuner.CloudTuner(
-        self._build_model,
-        project_id=_PROJECT_ID,
-        region=_REGION,
-        objective='acc',
-        hyperparameters=_HPS,
-        max_trials=5,
-        study_id=study_id,
-        directory=os.path.join(self.get_temp_dir(), study_id, str(tuner_id)))
-    tuner.tuner_id = str(tuner_id)
-    return tuner
+  tuner = cloudtuner.CloudTuner(
+      _build_model,
+      project_id=_PROJECT_ID,
+      region=_REGION,
+      objective='acc',
+      hyperparameters=_HPS,
+      max_trials=5,
+      study_id=study_id,
+      directory=os.path.join(temp_dir, study_id, tuner_id))
+  tuner.tuner_id = tuner_id
 
-  def _build_model(self, hparams):
-    # Note that CloudTuner does not support adding hyperparameters in the model
-    # building function. Instead, the search space is configured by passing a
-    # hyperparameters argument when instantiating (constructing) the tuner.
-    model = keras.Sequential()
-    model.add(keras.layers.Flatten(input_shape=self._input_shape))
+  tuner.search(
+      x=x,
+      y=y,
+      epochs=2,
+      steps_per_epoch=20,
+      validation_steps=10,
+      validation_data=(val_x, val_y),
+  )
+  return tuner
 
-    # Build the model with number of layers from the hyperparameters
-    for _ in range(hparams.get('num_layers')):
-      model.add(keras.layers.Dense(units=64, activation='relu'))
-    model.add(keras.layers.Dense(10, activation='softmax'))
 
-    # Compile the model with learning rate from the hyperparameters
-    model.compile(
-        optimizer=keras.optimizers.Adam(lr=hparams.get('learning_rate')),
-        loss='sparse_categorical_crossentropy',
-        metrics=['acc'])
-    return model
+def _dist_search_fn_wrapper(args):
+  return _dist_search_fn(*args)
 
-  def _search_fn(self, tuner):
-    # Start searching from different time points for each worker
-    # to avoid model.build collision. If not spaced out, deadlocks might occur
-    # due to the Global Interpreter Lock in Python, that prevents multiple
-    # threads from executing Python bytecode at once.
-    time.sleep(int(tuner.tuner_id) * 2)
-    tuner.search(
-        x=self._x,
-        y=self._y,
-        epochs=2,
-        steps_per_epoch=20,
-        validation_steps=10,
-        validation_data=(self._val_x, self._val_y),
-        verbose=0)
-    return tuner
+
+class _CloudTunerIntegrationTestBase(tf.test.TestCase):
 
   def _assert_output(self, fn, regex_str):
     stdout = io.StringIO()
@@ -147,10 +129,23 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     self._assert_output(fn,
                         '.*Results summary.*Trial summary.*Hyperparameters.*')
 
+  def tearDown(self):
+    super(_CloudTunerIntegrationTestBase, self).tearDown()
+    tf.keras.backend.clear_session()
+
+
+class CloudTunerIntegrationTest(_CloudTunerIntegrationTestBase):
+
+  @classmethod
+  def setUpClass(cls):
+    super(CloudTunerIntegrationTest, cls).setUpClass()
+    (cls._x, cls._y), (cls._val_x, cls._val_y) = _load_data()
+
   def testCloudTunerHyperparameters(self):
+    """Test case to configure Tuner with HyperParameters object."""
     study_id = '{}_hyperparameters'.format(_STUDY_ID_BASE)
     tuner = cloudtuner.CloudTuner(
-        self._build_model,
+        _build_model,
         project_id=_PROJECT_ID,
         region=_REGION,
         objective='acc',
@@ -178,6 +173,7 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     self._assert_results_summary(tuner.results_summary)
 
   def testCloudTunerDatasets(self):
+    """Test case to configure Tuner with tf.data.Dataset as input data."""
     train_dataset = tf.data.Dataset.from_tensor_slices(
         (self._x, self._y)).batch(128).cache().prefetch(1000)
     eval_dataset = tf.data.Dataset.from_tensor_slices(
@@ -185,7 +181,7 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
 
     study_id = '{}_dataset'.format(_STUDY_ID_BASE)
     tuner = cloudtuner.CloudTuner(
-        self._build_model,
+        _build_model,
         project_id=_PROJECT_ID,
         region=_REGION,
         objective='acc',
@@ -209,6 +205,7 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
     self._assert_results_summary(tuner.results_summary)
 
   def testCloudTunerStudyConfig(self):
+    """Test case to configure Tuner with StudyConfig object."""
     # Configure the search space. Specification:
     # https://cloud.google.com/ai-platform/optimizer/docs/reference/rest/v1/projects.locations.studies#StudyConfig
     study_config = {
@@ -246,7 +243,7 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
 
     study_id = '{}_study_config'.format(_STUDY_ID_BASE)
     tuner = cloudtuner.CloudTuner(
-        self._build_model,
+        _build_model,
         project_id=_PROJECT_ID,
         region=_REGION,
         study_config=study_config,
@@ -269,17 +266,17 @@ class CloudTunerIntegrationTest(tf.test.TestCase):
 
     self._assert_results_summary(tuner.results_summary)
 
-  @unittest.skip('Disabled to investigate thread-safety.')
+
+class CloudTunerDistributedIntegrationTest(_CloudTunerIntegrationTestBase):
+
   def testCloudTunerDistributedTuning(self):
+    """Test case to simulate multiple parallel tuning workers."""
     study_id = '{}_dist'.format(_STUDY_ID_BASE)
-    tuners = [
-        self._single_tuner_dist(study_id, i)
-        for i in range(_NUM_PARALLEL_TRIALS)
-    ]
-    pool = dummy.Pool(processes=_NUM_PARALLEL_TRIALS)
-    results = pool.map(self._search_fn, tuners)
-    pool.close()
-    pool.join()
+
+    with multiprocessing.Pool(processes=_NUM_PARALLEL_TRIALS) as pool:
+      results = pool.map(_dist_search_fn_wrapper,
+                         [(self.get_temp_dir(), study_id, 'tuner{}'.format(i))
+                          for i in range(_NUM_PARALLEL_TRIALS)])
 
     self._assert_results_summary(results[0].results_summary)
 
