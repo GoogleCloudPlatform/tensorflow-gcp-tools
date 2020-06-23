@@ -26,7 +26,7 @@ from tensorflow_enterprise_addons.cloud_fit import _client
 from tensorflow_enterprise_addons.cloud_fit import _remote
 
 # If input dataset is created outside tuner.search(),
-# it requires eager execution even in in TF 1.x.
+# it requires eager execution even in TF 1.x.
 if tf.version.VERSION.split('.')[0] == '1':
   tf.compat.v1.enable_eager_execution()
 
