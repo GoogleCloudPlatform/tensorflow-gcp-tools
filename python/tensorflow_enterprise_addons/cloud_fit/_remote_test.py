@@ -24,14 +24,13 @@ import tensorflow as tf
 
 from tensorflow_enterprise_addons.cloud_fit import _client
 from tensorflow_enterprise_addons.cloud_fit import _remote
+from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
 
-# If input dataset is created outside tuner.search(),
-# it requires eager execution even in TF 1.x.
-if tf.version.VERSION.split('.')[0] == '1':
-  tf.compat.v1.enable_eager_execution()
+# Can only export Datasets which were created executing eagerly
+cloud_fit_utils.enable_eager_for_tf_1()
 
-MIRRORED_STRATEGY_NAME = _remote.MIRRORED_STRATEGY_NAME
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = _remote.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
 
 FLAGS = flags.FLAGS
 FLAGS.remote_dir = 'test_remote_dir'
@@ -63,15 +62,15 @@ class CloudRunTest(tf.test.TestCase):
     self._project_id = 'test_project_id'
     self._remote_dir = tempfile.mkdtemp()
     self._output_dir = os.path.join(self._remote_dir, 'output')
-    self._model = self._half_plus_one_model()
-    self._x = [[9.], [10.], [11.]] * 10
-    self._y = [[xi[0] / 2. + 6] for xi in self._x]
-    self._dataset = tf.data.Dataset.from_tensor_slices((self._x, self._y))
+    self._x = np.random.random(10)
+    self._y = np.random.random(10)
+    self._model = self._model()
     self._logs_dir = os.path.join(self._remote_dir, 'logs')
     self._fit_kwargs = {
-        'x': self._dataset,
+        'x': self._x,
+        'y': self._y,
         'verbose': 2,
-        'batch_size': 30,
+        'batch_size': 2,
         'epochs': 10,
         'callbacks': [tf.keras.callbacks.TensorBoard(log_dir=self._logs_dir)]
     }
@@ -86,24 +85,11 @@ class CloudRunTest(tf.test.TestCase):
         }
     })
 
-  def _half_plus_one_model(self):
-    """Writes SavedModel to compute y = wx + 1, with w trainable."""
-    inp = tf.keras.layers.Input(shape=(1,), dtype=tf.float32)
-    times_w = tf.keras.layers.Dense(
-        units=1,
-        kernel_initializer=tf.keras.initializers.Constant([[0.5]]),
-        kernel_regularizer=tf.keras.regularizers.l2(0.01),
-        use_bias=False)
-    plus_1 = tf.keras.layers.Dense(
-        units=1,
-        kernel_initializer=tf.keras.initializers.Constant([[1.0]]),
-        bias_initializer=tf.keras.initializers.Constant([1.0]),
-        trainable=False)
-    outp = plus_1(times_w(inp))
-    model = tf.keras.Model(inp, outp)
-
-    model.compile(
-        tf.keras.optimizers.SGD(0.002), 'mean_squared_error', run_eagerly=True)
+  def _model(self):
+    inputs = tf.keras.layers.Input(shape=(1,))
+    outputs = tf.keras.layers.Dense(1)(inputs)
+    model = tf.keras.models.Model(inputs=inputs, outputs=outputs)
+    model.compile(optimizer='Adam', loss='mse', metrics=['mae'])
     return model
 
   def test_run(self):
@@ -114,7 +100,8 @@ class CloudRunTest(tf.test.TestCase):
     model = tf.keras.models.load_model(self._output_dir)
 
     # Test saved model load and works properly
-    self.assertGreater(model.losses, np.array([0.0], dtype=np.float32))
+    self.assertGreater(
+        model.evaluate(self._x, self._y)[0], np.array([0.0], dtype=np.float32))
 
   def test_custom_callback(self):
     # Setting up custom callback with mock calls

@@ -23,15 +23,13 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 from tensorflow_enterprise_addons.cloud_fit import _client
-from tensorflow_enterprise_addons.cloud_fit import _remote
+from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
 
-# If input dataset is created outside tuner.search(),
-# it requires eager execution even in TF 1.x.
-if tf.version.VERSION.split('.')[0] == '1':
-  tf.compat.v1.enable_eager_execution()
+# Can only export Datasets which were created executing eagerly
+cloud_fit_utils.enable_eager_for_tf_1()
 
-MIRRORED_STRATEGY_NAME = _remote.MIRRORED_STRATEGY_NAME
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = _remote.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
 
 
 class CloudRunModelTest(tf.test.TestCase):
@@ -136,8 +134,14 @@ class CloudRunModelTest(tf.test.TestCase):
     self.assertGreaterEqual(
         len(tf.io.gfile.listdir(os.path.join(self._remote_dir, 'model'))), 1)
 
-    training_assets_graph = tf.saved_model.load(
-        os.path.join(self._remote_dir, 'training_assets'))
+    if tf.version.VERSION.split('.')[0] == '1':
+      training_assets_graph = tf.compat.v2.saved_model.load(
+          export_dir=os.path.join(self._remote_dir, 'training_assets'),
+          tags=None)
+    else:
+      training_assets_graph = tf.saved_model.load(
+          os.path.join(self._remote_dir, 'training_assets'))
+
     pickled_callbacks = tfds.as_numpy(training_assets_graph.callbacks_fn())
     unpickled_callbacks = cloudpickle.loads(pickled_callbacks)
     self.assertIsInstance(unpickled_callbacks[0],
@@ -162,8 +166,12 @@ class CloudRunModelTest(tf.test.TestCase):
     self.assertEqual(body['job_id'], job_id)
     remote_dir = body['trainingInput']['args'][1]
 
-    training_assets_graph = tf.saved_model.load(
-        os.path.join(remote_dir, 'training_assets'))
+    if tf.version.VERSION.split('.')[0] == '1':
+      training_assets_graph = tf.compat.v2.saved_model.load(
+          export_dir=os.path.join(remote_dir, 'training_assets'), tags=None)
+    else:
+      training_assets_graph = tf.saved_model.load(
+          os.path.join(remote_dir, 'training_assets'))
     elements = training_assets_graph.fit_kwargs_fn()
     self.assertDictContainsSubset(
         tfds.as_numpy(elements), {

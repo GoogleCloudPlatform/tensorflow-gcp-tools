@@ -22,6 +22,13 @@ from googleapiclient import discovery
 import numpy as np
 import tensorflow as tf
 from tensorflow_enterprise_addons.cloud_fit import _client
+from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
+
+# Can only export Datasets which were created executing eagerly
+cloud_fit_utils.enable_eager_for_tf_1()
+
+MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
 
 # The staging bucket to use to copy the model and data for remote run.
 REMOTE_DIR = os.environ['CT_E2E_TEST_BUCKET']
@@ -36,7 +43,7 @@ REGION = 'us-central1'  # os.environ['CT_E2E_REGION']
 DOCKER_IMAGE = os.environ['CT_E2E_DOCKER_IMAGE']
 
 # Polling interval for AI Platform job status check
-POLLING_INTERVAL_IN_SECONDS = 30
+POLLING_INTERVAL_IN_SECONDS = 120
 
 
 class CloudRunIntegrationTest(tf.test.TestCase):

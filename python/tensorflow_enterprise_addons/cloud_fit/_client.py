@@ -28,16 +28,11 @@ import cloudpickle
 from googleapiclient import discovery
 import tensorflow as tf
 import google.auth
+from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
 
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = tf.distribute.experimental.MultiWorkerMirroredStrategy.__name__
-MIRRORED_STRATEGY_NAME = tf.distribute.MirroredStrategy.__name__
-
-SUPPORTED_DISTRIBUTION_STRATEGIES = {
-    MULTI_WORKER_MIRRORED_STRATEGY_NAME:
-        tf.distribute.experimental.MultiWorkerMirroredStrategy,
-    MIRRORED_STRATEGY_NAME:
-        tf.distribute.MirroredStrategy,
-}
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
+SUPPORTED_DISTRIBUTION_STRATEGIES = cloud_fit_utils.SUPPORTED_DISTRIBUTION_STRATEGIES
 
 # Constants for default cluster spec
 DEFAULT_INSTANCE_TYPE = 'n1-standard-4'

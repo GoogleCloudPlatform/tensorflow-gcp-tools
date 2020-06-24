@@ -23,7 +23,7 @@ def make_required_install_packages():
       'google-auth',
       'keras-tuner',
       'tensorflow>=1.15.0,<3.0',
-      'tensorflow_datasets>=2.0.0',
+      'tensorflow_datasets',
   ]
 
 

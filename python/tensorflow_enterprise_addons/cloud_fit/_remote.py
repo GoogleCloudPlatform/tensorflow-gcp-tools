@@ -29,6 +29,11 @@ from absl import logging
 import cloudpickle
 import tensorflow as tf
 import tensorflow_datasets as tfds
+from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
+
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
+SUPPORTED_DISTRIBUTION_STRATEGIES = cloud_fit_utils.SUPPORTED_DISTRIBUTION_STRATEGIES
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string(
@@ -39,16 +44,6 @@ flags.DEFINE_string(
 flags.DEFINE_string(
     'remote_dir', None,
     'Temporary cloud storage folder for transferring model and dataset')
-
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = tf.distribute.experimental.MultiWorkerMirroredStrategy.__name__
-MIRRORED_STRATEGY_NAME = tf.distribute.MirroredStrategy.__name__
-
-SUPPORTED_DISTRIBUTION_STRATEGIES = {
-    MULTI_WORKER_MIRRORED_STRATEGY_NAME:
-        tf.distribute.experimental.MultiWorkerMirroredStrategy,
-    MIRRORED_STRATEGY_NAME:
-        tf.distribute.MirroredStrategy,
-}
 
 
 def main(unused_argv):
@@ -80,8 +75,12 @@ def run(remote_dir, distribution_strategy_text):
       distribution_strategy_text]()
 
   with distribution_strategy.scope():
-    training_assets_graph = tf.saved_model.load(
-        os.path.join(remote_dir, 'training_assets'))
+    if cloud_fit_utils.is_tf_v1():
+      training_assets_graph = tf.compat.v2.saved_model.load(
+          export_dir=os.path.join(remote_dir, 'training_assets'), tags=None)
+    else:
+      training_assets_graph = tf.saved_model.load(
+          os.path.join(remote_dir, 'training_assets'))
 
     fit_kwargs = {}
     if hasattr(training_assets_graph, 'fit_kwargs_fn'):
