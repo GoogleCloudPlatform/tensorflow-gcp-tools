@@ -84,6 +84,19 @@ class CloudFitIntegrationTest(tf.test.TestCase):
     x = np.random.random((2, 3))
     y = np.random.randint(0, 2, (2, 2))
 
+    if cloud_fit_utils.is_tf_v1():
+      with self.assertRaises(RuntimeError):
+        client.cloud_fit(
+            self.model(),
+            x=x,
+            y=y,
+            remote_dir=remote_dir,
+            region=self.region,
+            project_id=self.project_id,
+            image_uri=self.image_uri,
+            epochs=2)
+      return
+
     job_id = client.cloud_fit(
         self.model(),
         x=x,
