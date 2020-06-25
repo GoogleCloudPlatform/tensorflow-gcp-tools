@@ -21,7 +21,7 @@ import uuid
 from googleapiclient import discovery
 import numpy as np
 import tensorflow as tf
-from tensorflow_enterprise_addons.cloud_fit import _client
+from tensorflow_enterprise_addons.cloud_fit import client
 from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
 
 # Can only export Datasets which were created executing eagerly
@@ -46,10 +46,10 @@ DOCKER_IMAGE = os.environ['CT_E2E_DOCKER_IMAGE']
 POLLING_INTERVAL_IN_SECONDS = 120
 
 
-class CloudRunIntegrationTest(tf.test.TestCase):
+class CloudFitIntegrationTest(tf.test.TestCase):
 
   def setUp(self):
-    super(CloudRunIntegrationTest, self).setUp()
+    super(CloudFitIntegrationTest, self).setUp()
     self.image_uri = DOCKER_IMAGE
     self.project_id = PROJECT_ID
     self.remote_dir = REMOTE_DIR
@@ -57,7 +57,7 @@ class CloudRunIntegrationTest(tf.test.TestCase):
     self.test_folders = []
 
   def tearDown(self):
-    super(CloudRunIntegrationTest, self).tearDown()
+    super(CloudFitIntegrationTest, self).tearDown()
     for folder in self.test_folders:
       self.delete_dir(folder)
 
@@ -84,7 +84,7 @@ class CloudRunIntegrationTest(tf.test.TestCase):
     x = np.random.random((2, 3))
     y = np.random.randint(0, 2, (2, 2))
 
-    job_id = _client.cloud_fit(
+    job_id = client.cloud_fit(
         self.model(),
         x=x,
         y=y,

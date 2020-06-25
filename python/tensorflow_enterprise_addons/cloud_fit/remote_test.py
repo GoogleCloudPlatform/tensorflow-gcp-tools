@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for google3.cloud.ml.tfe.keras4gcp.cloud_model_run._remote."""
+"""Tests for google3.cloud.ml.tfe.keras4gcp.cloud_model_run.remote."""
 
 import json
 import os
@@ -22,9 +22,9 @@ from absl import flags
 import numpy as np
 import tensorflow as tf
 
-from tensorflow_enterprise_addons.cloud_fit import _client
-from tensorflow_enterprise_addons.cloud_fit import _remote
+from tensorflow_enterprise_addons.cloud_fit import client
 from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
+from tensorflow_enterprise_addons.cloud_fit import remote
 
 # Can only export Datasets which were created executing eagerly
 cloud_fit_utils.enable_eager_for_tf_1()
@@ -54,10 +54,10 @@ class CustomCallbackExample(tf.keras.callbacks.Callback):
     _MockCallable.mock_call()
 
 
-class CloudRunTest(tf.test.TestCase):
+class CloudFitRemoteTest(tf.test.TestCase):
 
   def setUp(self):
-    super(CloudRunTest, self).setUp()
+    super(CloudFitRemoteTest, self).setUp()
     self._image_uri = 'gcr.io/some_test_image:latest'
     self._project_id = 'test_project_id'
     self._remote_dir = tempfile.mkdtemp()
@@ -74,7 +74,7 @@ class CloudRunTest(tf.test.TestCase):
         'epochs': 10,
         'callbacks': [tf.keras.callbacks.TensorBoard(log_dir=self._logs_dir)]
     }
-    _client._serialize_assets(self._remote_dir, self._model, **self._fit_kwargs)
+    client._serialize_assets(self._remote_dir, self._model, **self._fit_kwargs)
     os.environ['TF_CONFIG'] = json.dumps({
         'cluster': {
             'worker': ['localhost:9999', 'localhost:9999']
@@ -93,7 +93,7 @@ class CloudRunTest(tf.test.TestCase):
     return model
 
   def test_run(self):
-    _remote.run(self._remote_dir, MIRRORED_STRATEGY_NAME)
+    remote.run(self._remote_dir, MIRRORED_STRATEGY_NAME)
     self.assertGreaterEqual(len(tf.io.gfile.listdir(self._output_dir)), 1)
     self.assertGreaterEqual(len(tf.io.gfile.listdir(self._logs_dir)), 1)
 
@@ -108,12 +108,12 @@ class CloudRunTest(tf.test.TestCase):
     _MockCallable.reset()
 
     self._fit_kwargs['callbacks'] = [CustomCallbackExample()]
-    _client._serialize_assets(self._remote_dir, self._model, **self._fit_kwargs)
+    client._serialize_assets(self._remote_dir, self._model, **self._fit_kwargs)
 
     # Verify callback function has not been called yet.
     _MockCallable.mock_callable.assert_not_called()
 
-    _remote.run(self._remote_dir, MIRRORED_STRATEGY_NAME)
+    remote.run(self._remote_dir, MIRRORED_STRATEGY_NAME)
     # Verifying callback functions triggered properly
     _MockCallable.mock_callable.assert_called_once_with()
 

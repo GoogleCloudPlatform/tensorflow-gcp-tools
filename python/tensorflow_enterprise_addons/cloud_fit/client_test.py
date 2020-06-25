@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""Tests for cloud_fit._client."""
+"""Tests for cloud_fit.client."""
 
 import os
 import tempfile
@@ -22,7 +22,7 @@ from googleapiclient import discovery
 import tensorflow as tf
 import tensorflow_datasets as tfds
 
-from tensorflow_enterprise_addons.cloud_fit import _client
+from tensorflow_enterprise_addons.cloud_fit import client
 from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
 
 # Can only export Datasets which were created executing eagerly
@@ -32,16 +32,16 @@ MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
 MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
 
 
-class CloudRunModelTest(tf.test.TestCase):
+class CloudFitClientTest(tf.test.TestCase):
 
   def setUp(self):
-    super(CloudRunModelTest, self).setUp()
+    super(CloudFitClientTest, self).setUp()
     self._image_uri = 'gcr.io/some_test_image:latest'
     self._project_id = 'test_project_id'
     self._region = 'test_region'
-    self._mock_api_client = mock.Mock()
+    self._mock_apiclient = mock.Mock()
     self._remote_dir = tempfile.mkdtemp()
-    self._job_spec = _client._default_job_spec(self._region, self._image_uri, [
+    self._job_spec = client._default_job_spec(self._region, self._image_uri, [
         '--remote_dir', self._remote_dir, '--distribution_strategy',
         MULTI_WORKER_MIRRORED_STRATEGY_NAME
     ])
@@ -53,7 +53,7 @@ class CloudRunModelTest(tf.test.TestCase):
 
   def _set_up_training_mocks(self):
     self._mock_create = mock.Mock()
-    self._mock_api_client.projects().jobs().create = self._mock_create
+    self._mock_apiclient.projects().jobs().create = self._mock_create
     self._mock_get = mock.Mock()
     self._mock_create.return_value = self._mock_get
     self._mock_get.execute.return_value = {
@@ -95,10 +95,10 @@ class CloudRunModelTest(tf.test.TestCase):
 
   @mock.patch.object(discovery, 'build', autospec=True)
   def test_submit_job(self, mock_discovery_build):
-    mock_discovery_build.return_value = self._mock_api_client
+    mock_discovery_build.return_value = self._mock_apiclient
     self._set_up_training_mocks()
 
-    _client._submit_job(self._job_spec, self._project_id)
+    client._submit_job(self._job_spec, self._project_id)
     mock_discovery_build.assert_called_once_with(
         'ml', 'v1', cache_discovery=False)
 
@@ -126,7 +126,7 @@ class CloudRunModelTest(tf.test.TestCase):
     args = self._scalar_fit_kwargs
     args['callbacks'] = [tensorboard_callback]
 
-    _client._serialize_assets(self._remote_dir, self._model, **args)
+    client._serialize_assets(self._remote_dir, self._model, **args)
     self.assertGreaterEqual(
         len(
             tf.io.gfile.listdir(
@@ -147,9 +147,9 @@ class CloudRunModelTest(tf.test.TestCase):
     self.assertIsInstance(unpickled_callbacks[0],
                           tf.keras.callbacks.TensorBoard)
 
-  @mock.patch.object(_client, '_submit_job', autospec=True)
+  @mock.patch.object(client, '_submit_job', autospec=True)
   def test_fit_kwargs(self, mock_submit_job):
-    job_id = _client.cloud_fit(
+    job_id = client.cloud_fit(
         self._model,
         x=self._dataset,
         validation_data=self._dataset,
@@ -180,9 +180,9 @@ class CloudRunModelTest(tf.test.TestCase):
             'verbose': 3
         })
 
-  @mock.patch.object(_client, '_submit_job', autospec=True)
+  @mock.patch.object(client, '_submit_job', autospec=True)
   def test_custom_job_spec(self, mock_submit_job):
-    _client.cloud_fit(
+    client.cloud_fit(
         self._model,
         x=self._dataset,
         validation_data=self._dataset,
@@ -205,11 +205,11 @@ class CloudRunModelTest(tf.test.TestCase):
             ],
         }, body['trainingInput'])
 
-  @mock.patch.object(_client, '_submit_job', autospec=True)
-  @mock.patch.object(_client, '_serialize_assets', autospec=True)
+  @mock.patch.object(client, '_submit_job', autospec=True)
+  @mock.patch.object(client, '_serialize_assets', autospec=True)
   def test_distribution_strategy(self, mock_serialize_assets, mock_submit_job):
 
-    _client.cloud_fit(self._model, x=self._dataset, remote_dir=self._remote_dir)
+    client.cloud_fit(self._model, x=self._dataset, remote_dir=self._remote_dir)
 
     kargs, _ = mock_submit_job.call_args
     body, _ = kargs
@@ -221,7 +221,7 @@ class CloudRunModelTest(tf.test.TestCase):
             ],
         }, body['trainingInput'])
 
-    _client.cloud_fit(
+    client.cloud_fit(
         self._model,
         x=self._dataset,
         remote_dir=self._remote_dir,
@@ -239,7 +239,7 @@ class CloudRunModelTest(tf.test.TestCase):
         }, body['trainingInput'])
 
     with self.assertRaises(ValueError):
-      _client.cloud_fit(
+      client.cloud_fit(
           self._model,
           x=self._dataset,
           remote_dir=self._remote_dir,
