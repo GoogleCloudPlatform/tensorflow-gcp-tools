@@ -69,6 +69,11 @@ def cloud_fit(model,
 
   Returns:
     AI Platform job ID
+
+  Raises:
+    RuntimeError: If executing in graph mode, eager execution is required for
+    cloud_fit.
+    NotImplementedError: Tensorflow v1.x is not supported.
   """
   logging.set_verbosity(logging.INFO)
 
@@ -76,6 +81,14 @@ def cloud_fit(model,
     raise ValueError('{} is not supported. Supported Strategies are {}'.format(
         distribution_strategy,
         [key for key in SUPPORTED_DISTRIBUTION_STRATEGIES.keys()]))
+
+  if cloud_fit_utils.is_tf_v1():
+    raise NotImplementedError('Tensorflow v1.x is not supported.')
+
+  # Can only export Datasets which were created executing eagerly
+  # Raise an error if eager execution is not enabled.
+  if not tf.executing_eagerly():
+    raise RuntimeError('Eager execution is required for cloud_fit.')
 
   if job_spec:
     job_spec['trainingInput']['args'] = [

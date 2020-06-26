@@ -149,6 +149,19 @@ class CloudFitClientTest(tf.test.TestCase):
 
   @mock.patch.object(client, '_submit_job', autospec=True)
   def test_fit_kwargs(self, mock_submit_job):
+    # Temporary work around to bypass test for TF 1.15
+    if cloud_fit_utils.is_tf_v1():
+      with self.assertRaises(RuntimeError):
+        client.cloud_fit(
+            self._model,
+            x=self._dataset,
+            validation_data=self._dataset,
+            remote_dir=self._remote_dir,
+            job_spec=self._job_spec,
+            batch_size=1,
+            epochs=2,
+            verbose=3)
+      return
     job_id = client.cloud_fit(
         self._model,
         x=self._dataset,
@@ -182,6 +195,20 @@ class CloudFitClientTest(tf.test.TestCase):
 
   @mock.patch.object(client, '_submit_job', autospec=True)
   def test_custom_job_spec(self, mock_submit_job):
+    # Temporary work around to bypass test for TF 1.15
+    if cloud_fit_utils.is_tf_v1():
+      with self.assertRaises(RuntimeError):
+        client.cloud_fit(
+            self._model,
+            x=self._dataset,
+            validation_data=self._dataset,
+            remote_dir=self._remote_dir,
+            job_spec=self._job_spec,
+            batch_size=1,
+            epochs=2,
+            verbose=3)
+      return
+
     client.cloud_fit(
         self._model,
         x=self._dataset,
@@ -208,6 +235,12 @@ class CloudFitClientTest(tf.test.TestCase):
   @mock.patch.object(client, '_submit_job', autospec=True)
   @mock.patch.object(client, '_serialize_assets', autospec=True)
   def test_distribution_strategy(self, mock_serialize_assets, mock_submit_job):
+    # Temporary work around to bypass test for TF 1.15
+    if cloud_fit_utils.is_tf_v1():
+      with self.assertRaises(RuntimeError):
+        client.cloud_fit(
+            self._model, x=self._dataset, remote_dir=self._remote_dir)
+      return
 
     client.cloud_fit(self._model, x=self._dataset, remote_dir=self._remote_dir)
 
