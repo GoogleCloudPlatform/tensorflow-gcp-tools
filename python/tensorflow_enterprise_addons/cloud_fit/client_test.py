@@ -23,13 +23,13 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 
 from tensorflow_enterprise_addons.cloud_fit import client
-from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
+from tensorflow_enterprise_addons.cloud_fit import utils
 
 # Can only export Datasets which were created executing eagerly
-cloud_fit_utils.enable_eager_for_tf_1()
+utils.enable_eager_for_tf_1()
 
-MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MIRRORED_STRATEGY_NAME = utils.MIRRORED_STRATEGY_NAME
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
 
 
 class CloudFitClientTest(tf.test.TestCase):
@@ -150,7 +150,7 @@ class CloudFitClientTest(tf.test.TestCase):
   @mock.patch.object(client, '_submit_job', autospec=True)
   def test_fit_kwargs(self, mock_submit_job):
     # Temporary work around to bypass test for TF 1.15
-    if cloud_fit_utils.is_tf_v1():
+    if utils.is_tf_v1():
       with self.assertRaises(RuntimeError):
         client.cloud_fit(
             self._model,
@@ -196,7 +196,7 @@ class CloudFitClientTest(tf.test.TestCase):
   @mock.patch.object(client, '_submit_job', autospec=True)
   def test_custom_job_spec(self, mock_submit_job):
     # Temporary work around to bypass test for TF 1.15
-    if cloud_fit_utils.is_tf_v1():
+    if utils.is_tf_v1():
       with self.assertRaises(RuntimeError):
         client.cloud_fit(
             self._model,
@@ -236,7 +236,7 @@ class CloudFitClientTest(tf.test.TestCase):
   @mock.patch.object(client, '_serialize_assets', autospec=True)
   def test_distribution_strategy(self, mock_serialize_assets, mock_submit_job):
     # Temporary work around to bypass test for TF 1.15
-    if cloud_fit_utils.is_tf_v1():
+    if utils.is_tf_v1():
       with self.assertRaises(RuntimeError):
         client.cloud_fit(
             self._model, x=self._dataset, remote_dir=self._remote_dir)

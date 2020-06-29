@@ -23,14 +23,14 @@ import numpy as np
 import tensorflow as tf
 
 from tensorflow_enterprise_addons.cloud_fit import client
-from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
 from tensorflow_enterprise_addons.cloud_fit import remote
+from tensorflow_enterprise_addons.cloud_fit import utils
 
 # Can only export Datasets which were created executing eagerly
-cloud_fit_utils.enable_eager_for_tf_1()
+utils.enable_eager_for_tf_1()
 
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
-MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MIRRORED_STRATEGY_NAME = utils.MIRRORED_STRATEGY_NAME
 
 FLAGS = flags.FLAGS
 FLAGS.remote_dir = 'test_remote_dir'
@@ -94,7 +94,7 @@ class CloudFitRemoteTest(tf.test.TestCase):
 
   def test_run(self):
     # Temporary work around to bypass test for TF 1.15
-    if cloud_fit_utils.is_tf_v1():
+    if utils.is_tf_v1():
       return
 
     remote.run(self._remote_dir, MIRRORED_STRATEGY_NAME)
@@ -109,7 +109,7 @@ class CloudFitRemoteTest(tf.test.TestCase):
 
   def test_custom_callback(self):
     # Temporary work around to bypass test for TF 1.15
-    if cloud_fit_utils.is_tf_v1():
+    if utils.is_tf_v1():
       return
 
     # Setting up custom callback with mock calls

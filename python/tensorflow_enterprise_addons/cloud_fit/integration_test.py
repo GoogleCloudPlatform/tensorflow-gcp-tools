@@ -22,13 +22,13 @@ from googleapiclient import discovery
 import numpy as np
 import tensorflow as tf
 from tensorflow_enterprise_addons.cloud_fit import client
-from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
+from tensorflow_enterprise_addons.cloud_fit import utils
 
 # Can only export Datasets which were created executing eagerly
-cloud_fit_utils.enable_eager_for_tf_1()
+utils.enable_eager_for_tf_1()
 
-MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MIRRORED_STRATEGY_NAME = utils.MIRRORED_STRATEGY_NAME
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
 
 # The staging bucket to use to copy the model and data for remote run.
 REMOTE_DIR = os.environ['CT_E2E_TEST_BUCKET']
@@ -84,7 +84,7 @@ class CloudFitIntegrationTest(tf.test.TestCase):
     x = np.random.random((2, 3))
     y = np.random.randint(0, 2, (2, 2))
 
-    if cloud_fit_utils.is_tf_v1():
+    if utils.is_tf_v1():
       with self.assertRaises(RuntimeError):
         client.cloud_fit(
             self.model(),

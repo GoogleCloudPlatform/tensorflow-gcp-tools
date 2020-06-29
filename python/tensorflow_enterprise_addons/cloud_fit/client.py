@@ -28,11 +28,11 @@ import cloudpickle
 from googleapiclient import discovery
 import tensorflow as tf
 import google.auth
-from tensorflow_enterprise_addons.cloud_fit import cloud_fit_utils
+from tensorflow_enterprise_addons.cloud_fit import utils
 
-MULTI_WORKER_MIRRORED_STRATEGY_NAME = cloud_fit_utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
-MIRRORED_STRATEGY_NAME = cloud_fit_utils.MIRRORED_STRATEGY_NAME
-SUPPORTED_DISTRIBUTION_STRATEGIES = cloud_fit_utils.SUPPORTED_DISTRIBUTION_STRATEGIES
+MULTI_WORKER_MIRRORED_STRATEGY_NAME = utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
+MIRRORED_STRATEGY_NAME = utils.MIRRORED_STRATEGY_NAME
+SUPPORTED_DISTRIBUTION_STRATEGIES = utils.SUPPORTED_DISTRIBUTION_STRATEGIES
 
 # Constants for default cluster spec
 DEFAULT_INSTANCE_TYPE = 'n1-standard-4'
@@ -82,7 +82,7 @@ def cloud_fit(model,
         distribution_strategy,
         [key for key in SUPPORTED_DISTRIBUTION_STRATEGIES.keys()]))
 
-  if cloud_fit_utils.is_tf_v1():
+  if utils.is_tf_v1():
     raise NotImplementedError('Tensorflow v1.x is not supported.')
 
   # Can only export Datasets which were created executing eagerly
