@@ -14,7 +14,7 @@
 # limitations under the License.
 """Module to enable remote execution of in memory model & Dataset.
 
-To train models in AI Platform training there is a need to capture a model that
+To train models in AI Platform Training there is a need to capture a model that
 is provided in memory along with other objects such as training and testing
 dataset, where the code behind the model may not be readily available as a
 Python module, but only available as an in-memory object of the calling process.
@@ -47,6 +47,7 @@ def cloud_fit(model,
               image_uri = None,
               distribution_strategy = DEFAULT_DISTRIBUTION_STRATEGY,
               job_spec = None,
+              job_id = None,
               **fit_kwargs):
   """Facilitates remote execution of in memory Model and Dataset on AI Platform.
 
@@ -60,9 +61,11 @@ def cloud_fit(model,
     distribution_strategy: Specifies the distribution strategy for remote
       execution when a jobspec is provided. Accepted values are strategy names
       as specified by 'tf.distribute.<strategy>.__name__'.
-    job_spec: AI Platform training job_spec, will take precedence over all other
+    job_spec: AI Platform Training job_spec, will take precedence over all other
       provided values except for remote_dir. If none is provided a default
       cluster spec and distribution strategy will be used.
+    job_id: A name to use for the AI Platform Training job (mixed-case letters,
+      numbers, and underscores only, starting with a letter).
     **fit_kwargs: Args to pass to model.fit() including training and eval data.
       Only keyword arguments are supported. Callback functions will be
       serialized as is, they must be available in run time environment.
@@ -110,6 +113,10 @@ def cloud_fit(model,
   # Setting AI Platform Training to use chief in TF_CONFIG environment variable
   # https://cloud.google.com/ai-platform/training/docs/distributed-training-details#chief-versus-master
   job_spec['trainingInput']['useChiefInTfConfig'] = 'True'
+
+  # If job_id is provided overwrite the job_id value.
+  if job_id:
+    job_spec['job_id'] = job_id
 
   _submit_job(job_spec, project_id)
   return job_spec['job_id']
@@ -193,7 +200,7 @@ def _default_job_spec(
   training_inputs['masterConfig'] = {'imageUri': image_uri}
   training_inputs['workerCount'] = DEFAULT_NUM_WORKERS
   job_spec = {'trainingInput': training_inputs}
-  job_spec['job_id'] = 'cloud_trainer_{}'.format(
+  job_spec['job_id'] = 'cloud_fit_{}'.format(
       datetime.datetime.now().strftime('%Y%m%d%H%M%S'))
   return job_spec
 
@@ -223,7 +230,7 @@ def _submit_job(job_spec, project_id = None):
   logging.info('Submitting job=%s, project=%s to AI Platform.',
                job_spec['job_id'], project_id)
 
-  # Configure AI Platform training job
+  # Configure AI Platform Training job
   # Disabling cache discovery to suppress noisy warning. More details at:
   # https://github.com/googleapis/google-api-python-client/issues/299
   api_client = discovery.build('ml', 'v1', cache_discovery=False)
@@ -233,7 +240,7 @@ def _submit_job(job_spec, project_id = None):
     request.execute()
   except Exception as e:
     raise RuntimeError(
-        'Submitting job to AI Platform training failed with error: {}'.format(
+        'Submitting job to AI Platform Training failed with error: {}'.format(
             e))
 
   logging.info('Job submitted successfully to AI Platform Training.')

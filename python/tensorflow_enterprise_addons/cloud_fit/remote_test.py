@@ -93,7 +93,7 @@ class CloudFitRemoteTest(tf.test.TestCase):
     return model
 
   def test_run(self):
-    # Temporary work around to bypass test for TF 1.15
+    # TF 1.x is not supported
     if utils.is_tf_v1():
       return
 
@@ -108,7 +108,7 @@ class CloudFitRemoteTest(tf.test.TestCase):
         model.evaluate(self._x, self._y)[0], np.array([0.0], dtype=np.float32))
 
   def test_custom_callback(self):
-    # Temporary work around to bypass test for TF 1.15
+    # TF 1.x is not supported
     if utils.is_tf_v1():
       return
 

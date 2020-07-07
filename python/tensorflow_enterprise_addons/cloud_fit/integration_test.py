@@ -37,10 +37,13 @@ REMOTE_DIR = os.environ['CT_E2E_TEST_BUCKET']
 PROJECT_ID = os.environ['CT_E2E_PROJECT_ID']
 
 # The GCP region in which the end-to-end test is run.
-REGION = 'us-central1'  # os.environ['CT_E2E_REGION']
+REGION = os.environ['CT_E2E_REGION']
 
 # The base docker image to use for remote environment.
 DOCKER_IMAGE = os.environ['CT_E2E_DOCKER_IMAGE']
+
+# Using the build ID for testing
+BUILD_ID = os.environ['CT_E2E_STUDY_ID']
 
 # Polling interval for AI Platform job status check
 POLLING_INTERVAL_IN_SECONDS = 120
@@ -84,6 +87,7 @@ class CloudFitIntegrationTest(tf.test.TestCase):
     x = np.random.random((2, 3))
     y = np.random.randint(0, 2, (2, 2))
 
+    # TF 1.x is not supported
     if utils.is_tf_v1():
       with self.assertRaises(RuntimeError):
         client.cloud_fit(
@@ -105,6 +109,8 @@ class CloudFitIntegrationTest(tf.test.TestCase):
         region=self.region,
         project_id=self.project_id,
         image_uri=self.image_uri,
+        job_id='cloud_fit_e2e_test_{}_{}'.format(
+            BUILD_ID.replace('-', '_'), 'test_in_memory_data'),
         epochs=2)
 
     # Wait for AIP Training job to finish

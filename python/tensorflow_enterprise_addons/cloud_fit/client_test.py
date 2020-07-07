@@ -81,7 +81,7 @@ class CloudFitClientTest(tf.test.TestCase):
     return model
 
   def test_default_job_spec(self):
-    self.assertStartsWith(self._job_spec['job_id'], 'cloud_trainer_')
+    self.assertStartsWith(self._job_spec['job_id'], 'cloud_fit_')
     self.assertDictContainsSubset(
         {
             'masterConfig': {
@@ -117,7 +117,7 @@ class CloudFitClientTest(tf.test.TestCase):
                 MULTI_WORKER_MIRRORED_STRATEGY_NAME
             ],
         }, body['trainingInput'])
-    self.assertStartsWith(body['job_id'], 'cloud_trainer_')
+    self.assertStartsWith(body['job_id'], 'cloud_fit_')
     self._mock_get.execute.assert_called_with()
 
   def test_serialize_assets(self):
@@ -149,7 +149,7 @@ class CloudFitClientTest(tf.test.TestCase):
 
   @mock.patch.object(client, '_submit_job', autospec=True)
   def test_fit_kwargs(self, mock_submit_job):
-    # Temporary work around to bypass test for TF 1.15
+    # TF 1.x is not supported
     if utils.is_tf_v1():
       with self.assertRaises(RuntimeError):
         client.cloud_fit(
@@ -195,7 +195,7 @@ class CloudFitClientTest(tf.test.TestCase):
 
   @mock.patch.object(client, '_submit_job', autospec=True)
   def test_custom_job_spec(self, mock_submit_job):
-    # Temporary work around to bypass test for TF 1.15
+    # TF 1.x is not supported
     if utils.is_tf_v1():
       with self.assertRaises(RuntimeError):
         client.cloud_fit(
@@ -235,7 +235,7 @@ class CloudFitClientTest(tf.test.TestCase):
   @mock.patch.object(client, '_submit_job', autospec=True)
   @mock.patch.object(client, '_serialize_assets', autospec=True)
   def test_distribution_strategy(self, mock_serialize_assets, mock_submit_job):
-    # Temporary work around to bypass test for TF 1.15
+    # TF 1.x is not supported
     if utils.is_tf_v1():
       with self.assertRaises(RuntimeError):
         client.cloud_fit(
@@ -278,6 +278,41 @@ class CloudFitClientTest(tf.test.TestCase):
           remote_dir=self._remote_dir,
           distribution_strategy='not_implemented_strategy',
           job_spec=self._job_spec)
+
+  @mock.patch.object(client, '_submit_job', autospec=True)
+  @mock.patch.object(client, '_serialize_assets', autospec=True)
+  def test_job_id(self, mock_serialize_assets, mock_submit_job):
+    # TF 1.x is not supported
+    if utils.is_tf_v1():
+      with self.assertRaises(RuntimeError):
+        client.cloud_fit(
+            self._model,
+            x=self._dataset,
+            validation_data=self._dataset,
+            remote_dir=self._remote_dir,
+            job_spec=self._job_spec,
+            batch_size=1,
+            epochs=2,
+            verbose=3)
+      return
+
+    test_job_id = 'test_job_id'
+    client.cloud_fit(
+        self._model,
+        x=self._dataset,
+        validation_data=self._dataset,
+        remote_dir=self._remote_dir,
+        job_spec=self._job_spec,
+        job_id=test_job_id,
+        batch_size=1,
+        epochs=2,
+        verbose=3)
+
+    kargs, _ = mock_submit_job.call_args
+    body, _ = kargs
+    self.assertDictContainsSubset({
+        'job_id': test_job_id,
+    }, body)
 
 
 if __name__ == '__main__':
