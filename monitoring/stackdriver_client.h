@@ -46,7 +46,7 @@ class StackdriverClient {
       const std::map<string, std::unique_ptr<PointSet>>& point_set_map) const;
 
   grpc::Status CreateMetricDescriptor(
-      const MetricDescriptor& metric_descritpor) const;
+      const MetricDescriptor& metric_descriptor) const;
 
  private:
   explicit StackdriverClient(Options options);
