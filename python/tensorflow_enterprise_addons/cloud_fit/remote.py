@@ -116,13 +116,13 @@ def run(remote_dir, distribution_strategy_text):
                                   'output/tmp/workers_' + str(uuid.uuid4()))
     logging.info('Saving model from worker in temporary folder %s.',
                  tmp_worker_dir)
-    tf.saved_model.save(model, tmp_worker_dir)
+    model.save(tmp_worker_dir)
 
     logging.info('Removing temporary folder %s.', tmp_worker_dir)
     _delete_dir(tmp_worker_dir)
 
   else:
-    tf.saved_model.save(model, os.path.join(remote_dir, 'output'))
+    model.save(os.path.join(remote_dir, 'output'))
 
 
 def _is_current_worker_chief():

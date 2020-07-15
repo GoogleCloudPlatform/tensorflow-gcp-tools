@@ -171,7 +171,7 @@ def _serialize_assets(remote_dir, model, **fit_kwargs):
       to_export, os.path.join(remote_dir, 'training_assets'), signatures={})
 
   # Saving the model
-  tf.saved_model.save(model, os.path.join(remote_dir, 'model'))
+  model.save(os.path.join(remote_dir, 'model'))
 
 
 def _default_job_spec(
