@@ -121,6 +121,19 @@ class CloudFitClientTest(tf.test.TestCase):
     self._mock_get.execute.assert_called_with()
 
   def test_serialize_assets(self):
+    # TF 1.x is not supported
+    if utils.is_tf_v1():
+      with self.assertRaises(RuntimeError):
+        client.cloud_fit(
+            self._model,
+            x=self._dataset,
+            validation_data=self._dataset,
+            remote_dir=self._remote_dir,
+            job_spec=self._job_spec,
+            batch_size=1,
+            epochs=2,
+            verbose=3)
+      return
     tensorboard_callback = tf.keras.callbacks.TensorBoard(
         log_dir=self._remote_dir)
     args = self._scalar_fit_kwargs
@@ -134,13 +147,8 @@ class CloudFitClientTest(tf.test.TestCase):
     self.assertGreaterEqual(
         len(tf.io.gfile.listdir(os.path.join(self._remote_dir, 'model'))), 1)
 
-    if tf.version.VERSION.split('.')[0] == '1':
-      training_assets_graph = tf.compat.v2.saved_model.load(
-          export_dir=os.path.join(self._remote_dir, 'training_assets'),
-          tags=None)
-    else:
-      training_assets_graph = tf.saved_model.load(
-          os.path.join(self._remote_dir, 'training_assets'))
+    training_assets_graph = tf.saved_model.load(
+        os.path.join(self._remote_dir, 'training_assets'))
 
     pickled_callbacks = tfds.as_numpy(training_assets_graph.callbacks_fn())
     unpickled_callbacks = cloudpickle.loads(pickled_callbacks)
@@ -179,12 +187,8 @@ class CloudFitClientTest(tf.test.TestCase):
     self.assertEqual(body['job_id'], job_id)
     remote_dir = body['trainingInput']['args'][1]
 
-    if tf.version.VERSION.split('.')[0] == '1':
-      training_assets_graph = tf.compat.v2.saved_model.load(
-          export_dir=os.path.join(remote_dir, 'training_assets'), tags=None)
-    else:
-      training_assets_graph = tf.saved_model.load(
-          os.path.join(remote_dir, 'training_assets'))
+    training_assets_graph = tf.saved_model.load(
+        os.path.join(remote_dir, 'training_assets'))
     elements = training_assets_graph.fit_kwargs_fn()
     self.assertDictContainsSubset(
         tfds.as_numpy(elements), {
