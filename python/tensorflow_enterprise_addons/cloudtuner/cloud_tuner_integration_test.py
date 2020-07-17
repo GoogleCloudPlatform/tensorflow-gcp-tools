@@ -18,7 +18,6 @@ import contextlib
 import io
 import multiprocessing
 import os
-import random
 import re
 import time
 import kerastuner
@@ -84,8 +83,9 @@ def _build_model(hparams):
 def _dist_search_fn(temp_dir, study_id, tuner_id):
   """Multi-process safe tuner instantiation and tuner.search()."""
 
-  # Jitter instantiation so as to avoid contention.
-  time.sleep(random.randint(0, 10))
+  # Jitter instantiation so as to avoid contention on study
+  # creation and dataset download.
+  time.sleep(int(tuner_id[5:]))  # tuner_id is formatted as 'tuner%d'
 
   # Dataset must be loaded independently in sub-process.
   (x, y), (val_x, val_y) = _load_data()
@@ -267,9 +267,9 @@ class CloudTunerIntegrationTest(_CloudTunerIntegrationTestBase):
     self._assert_results_summary(tuner.results_summary)
 
 
-class CloudTunerDistributedIntegrationTest(_CloudTunerIntegrationTestBase):
+class CloudTunerInDistributedIntegrationTest(_CloudTunerIntegrationTestBase):
 
-  def testCloudTunerDistributedTuning(self):
+  def testCloudTunerInProcessDistributedTuning(self):
     """Test case to simulate multiple parallel tuning workers."""
     study_id = '{}_dist'.format(_STUDY_ID_BASE)
 
@@ -279,6 +279,11 @@ class CloudTunerDistributedIntegrationTest(_CloudTunerIntegrationTestBase):
                           for i in range(_NUM_PARALLEL_TRIALS)])
 
     self._assert_results_summary(results[0].results_summary)
+
+  def testCloudTunerAIPlatformTrainingDistributedTuning(self):
+    """Test case of parallel tuning using Cloud AI Platform as flock manager."""
+    study_id = '{}_caip_dist'.format(_STUDY_ID_BASE)
+    del study_id
 
 
 if __name__ == '__main__':
