@@ -25,21 +25,19 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow_enterprise_addons import cloudtuner
 
-
 # If input dataset is created outside tuner.search(),
-# it requires eager execution even in in TF 1.x.
+# it requires eager execution even in TF 1.x.
 if tf.version.VERSION.split('.')[0] == '1':
   tf.compat.v1.enable_eager_execution()
 
-
 # The project id to use to run tests.
-_PROJECT_ID = os.environ['CT_E2E_PROJECT_ID']
+_PROJECT_ID = os.environ['PROJECT_ID']
 
 # The GCP region in which the end-to-end test is run.
-_REGION = os.environ['CT_E2E_REGION']
+_REGION = os.environ['REGION']
 
 # Study ID for testing
-_STUDY_ID_BASE = os.environ['CT_E2E_STUDY_ID']
+_STUDY_ID_BASE = os.environ['BUILD_ID']
 
 # The search space for hyperparameters
 _HPS = kerastuner.engine.hyperparameters.HyperParameters()

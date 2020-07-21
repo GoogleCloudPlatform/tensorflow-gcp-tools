@@ -31,19 +31,19 @@ MIRRORED_STRATEGY_NAME = utils.MIRRORED_STRATEGY_NAME
 MULTI_WORKER_MIRRORED_STRATEGY_NAME = utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
 
 # The staging bucket to use to copy the model and data for remote run.
-REMOTE_DIR = os.environ['CT_E2E_TEST_BUCKET']
+REMOTE_DIR = os.environ['TEST_BUCKET']
 
 # The project id to use to run tests.
-PROJECT_ID = os.environ['CT_E2E_PROJECT_ID']
+PROJECT_ID = os.environ['PROJECT_ID']
 
 # The GCP region in which the end-to-end test is run.
-REGION = os.environ['CT_E2E_REGION']
+REGION = os.environ['REGION']
 
 # The base docker image to use for remote environment.
-DOCKER_IMAGE = os.environ['CT_E2E_DOCKER_IMAGE']
+DOCKER_IMAGE = os.environ['DOCKER_IMAGE']
 
 # Using the build ID for testing
-BUILD_ID = os.environ['CT_E2E_STUDY_ID']
+BUILD_ID = os.environ['BUILD_ID']
 
 # Polling interval for AI Platform job status check
 POLLING_INTERVAL_IN_SECONDS = 120
