@@ -24,6 +24,9 @@ _OPTIMIZER_API_DOCUMENT_FILE = 'api/ml_public_google_rest_v1.json'
 # trial suggestions in one tuning loop.
 _SUGGESTION_COUNT_PER_REQUEST = 1
 
+# Number of tries to retry getting study if it was already created
+_NUM_TRIES_FOR_STUDIES = 3
+
 _USER_AGENT_FOR_CLOUD_TUNER_TRACKING = 'cloud-tuner/' + version.__version__
 
 
@@ -320,18 +323,26 @@ def create_or_load_study(project_id, region, study_id,
   try:
     tf.get_logger().info(request.execute())
   except errors.HttpError as e:
-    if e.resp.status == 409:
-      tf.get_logger().info('Study already existed. Load existing study...')
-      # Get study
-      study_name = '{}/studies/{}'.format(study_parent, study_id)
+    if e.resp.status != 409:  # 409 implies study exists, will be handled below
+      raise e
+
+    tf.get_logger().info('Study already existed. Load existing study...')
+    # Get study
+    study_name = '{}/studies/{}'.format(study_parent, study_id)
+    x = 1
+    while True:
       try:
         service_client.projects().locations().studies().get(
             name=study_name).execute()
       except errors.HttpError as err:
-        tf.get_logger().info('GetStudy failed.')
-        raise err
-    else:
-      raise e
+        if x >= _NUM_TRIES_FOR_STUDIES:
+          raise RuntimeError(
+              'GetStudy wasn\'t successful after {0} tries: {1!s}'.format(
+                  _NUM_TRIES_FOR_STUDIES, err))
+        x += 1
+        time.sleep(1)  # wait 1 second before trying to get the study again
+      else:
+        break
 
   return _OptimizerClient(service_client, project_id, region, study_id)
 
