@@ -169,7 +169,7 @@ TEST(StackdriverClientTest, CreateTimeSeries) {
 }
 
 TEST(StackdriverClientTest, CreateMetricDescriptor) {
-  MetricDescriptor metric_descritpor{
+  MetricDescriptor metric_descriptor{
       .name = "metric_1",
       .description = "desc",
       .label_names = {"a", "b"},
@@ -208,7 +208,7 @@ TEST(StackdriverClientTest, CreateMetricDescriptor) {
               CreateMetricDescriptor(_, EqualsRequest(expected_request), _))
       .WillOnce(Return(::grpc::Status::OK));
   StackdriverClient client({"test_project"}, std::move(mock_metric_service));
-  EXPECT_OK(client.CreateMetricDescriptor(metric_descritpor));
+  EXPECT_OK(client.CreateMetricDescriptor(metric_descriptor));
 }
 
 }  // namespace monitoring

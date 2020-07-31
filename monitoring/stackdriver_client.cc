@@ -116,7 +116,6 @@ void ConvertPoint(const Point& tf_point,
           stackdriver_point->mutable_value()->mutable_distribution_value());
       break;
     case ValueType::kPercentiles:
-      // TODO(olz) handle percentile value type
       break;
   }
 
@@ -131,7 +130,6 @@ void ConvertPointSet(const PointSet& point_set,
   time_series->mutable_resource()->set_type(kDefaultResourceType);
 
   // Only keeps the first point for prototype
-  // TODO(olz) properly handle the rest points
   if (!point_set.points.empty()) {
     ConvertPoint(*point_set.points.front(), time_series->add_points());
   }
@@ -228,11 +226,11 @@ grpc::Status StackdriverClient::CreateTimeSeries(
 }
 
 grpc::Status StackdriverClient::CreateMetricDescriptor(
-    const MetricDescriptor& metric_descritpor) const {
+    const MetricDescriptor& metric_descriptor) const {
   google::monitoring::v3::CreateMetricDescriptorRequest request;
   request.set_name(absl::StrCat(kProjectNamePrefix, options_.project_id));
 
-  ConvertMetricDescriptor(metric_descritpor,
+  ConvertMetricDescriptor(metric_descriptor,
                           request.mutable_metric_descriptor());
 
   grpc::ClientContext context;

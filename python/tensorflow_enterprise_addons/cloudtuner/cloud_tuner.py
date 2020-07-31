@@ -257,7 +257,6 @@ class CloudOracle(oracle_module.Oracle):
     Returns:
       List of KerasTuner Trials.
     """
-    # TODO(b/149101786) support multi-objective optimization.
     if len(self.objective) > 1:
       raise ValueError(
           'Getting the best trials for multi-objective optimization '
