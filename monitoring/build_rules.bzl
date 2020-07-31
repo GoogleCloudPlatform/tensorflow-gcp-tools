@@ -64,6 +64,7 @@ def cc_grpc_library(name, srcs, deps, service_namespace = "grpc", **kwargs):
       srcs: the proto_libraries used to generate the cc_grpc_library
       deps: the dependencies used to link into this cc_grpc_library, defined by
         cc_proto_library
+      service_namespace: Namespace for the service.
       **kwargs: other args not used, for compatibility only
     """
     if len(srcs) != 1:
