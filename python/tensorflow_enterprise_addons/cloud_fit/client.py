@@ -83,7 +83,7 @@ def cloud_fit(model,
   if distribution_strategy not in SUPPORTED_DISTRIBUTION_STRATEGIES:
     raise ValueError('{} is not supported. Supported Strategies are {}'.format(
         distribution_strategy,
-        [key for key in SUPPORTED_DISTRIBUTION_STRATEGIES.keys()]))
+        list(SUPPORTED_DISTRIBUTION_STRATEGIES.keys())))
 
   if utils.is_tf_v1():
     raise NotImplementedError('Tensorflow v1.x is not supported.')

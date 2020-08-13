@@ -51,7 +51,7 @@ def main(unused_argv):
   if FLAGS.distribution_strategy not in SUPPORTED_DISTRIBUTION_STRATEGIES:
     raise ValueError('{} is not supported. Supported Strategies are {}'.format(
         FLAGS.distribution_strategy,
-        [key for key in SUPPORTED_DISTRIBUTION_STRATEGIES.keys()]))
+        list(SUPPORTED_DISTRIBUTION_STRATEGIES.keys())))
 
   run(FLAGS.remote_dir, FLAGS.distribution_strategy)
 
