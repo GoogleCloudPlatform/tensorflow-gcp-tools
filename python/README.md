@@ -1,13 +1,37 @@
 
 ## Tensorflow Enterprise Addons
 
-tensorflow-enterprise-addons is the Python package for a subset of
+`tensorflow-enterprise-addons` is the Python package for a subset of
 functionalities offered via
 [tensorflow-gcp-tools](https://github.com/GoogleCloudPlatform/tensorflow-gcp-tools)
-repository. tensorflow-enterprise-addons provides an implementation of
+repository. `tensorflow-enterprise-addons` provides an implementation of
 TensorFlow APIs that seamlessly integrate [TensorFlow](http://tensorflow.org/)
 on [Google Cloud Platform (GCP)](https://cloud.google.com/). Following modules
 are currently available:
+
+### TensorFlow Enterprise Addons - Cloud Fit
+
+`cloud_fit` provides an API that enables training on
+[Google Cloud AI Platform](https://cloud.google.com/ai-platform). `cloud_fit`
+serializes the model, datasets, and callback functions and submits them for
+remote execution on AI Platform. `cloud_fit` is intended to function in the same
+manner as `model.fit()`. This module is designed to be used within a pipeline or
+an automated process such as from CloudTuner however it can be used directly as
+well.
+
+<table>
+  <td>
+    <a href="https://colab.research.google.com/github/GoogleCloudPlatform/tensorflow-gcp-tools/blob/master/examples/cloud_fit.ipynb">
+      <img src="https://cloud.google.com/ml-engine/images/colab-logo-32px.png" alt="Colab logo"/> Run in Colab
+    </a>
+  </td>
+  <td>
+    <a href="https://github.com/GoogleCloudPlatform/tensorflow-gcp-tools/blob/master/examples/cloud_fit.ipynb">
+      <img src="https://cloud.google.com/ml-engine/images/github-logo-32px.png" alt="GitHub logo"/>
+      View on GitHub
+    </a>
+  </td>
+</table>
 
 ### TensorFlow Enterprise Addons - CloudTuner
 
