@@ -6,6 +6,7 @@ from __future__ import division
 
 from __future__ import print_function
 import datetime
+import http
 import json
 import os
 import time
@@ -156,6 +157,7 @@ class _OptimizerClient(object):
 
     Args:
       trial_id: trial_id.
+
     Returns:
       Whether it is recommended to stop the trial early.
     """
@@ -221,6 +223,43 @@ class _OptimizerClient(object):
       raise e
     return resp.get('trials', [])
 
+  def list_studies(self):
+    """List all studies under the current project and region.
+
+    Returns:
+      The list of studies.
+    """
+    parent_name = self._make_parent_name()
+    try:
+      resp = self.service_client.projects().locations().studies().list(
+          parent=parent_name).execute()
+    except errors.HttpError:
+      tf.get_logger().info('ListStudies failed.')
+      raise
+    return resp.get('studies', [])
+
+  def delete_study(self, study_name = None):
+    """Deletes the study.
+
+    Args:
+      study_name: Name of the study.
+
+    Raises:
+      ValueError: Indicates that the study_name does not exist.
+      HttpError: Indicates a HTTP error from calling the discovery API.
+    """
+    if study_name is None:
+      study_name = self._make_study_name()
+    try:
+      self.service_client.projects().locations().studies().delete(
+          name=study_name).execute()
+    except errors.HttpError as e:
+      if e.resp.status == http.HTTPStatus.NOT_FOUND.value:  # Study not found
+        raise ValueError(
+            'DeleteStudy failed. Study not found: {}.'.format(study_name))
+      tf.get_logger().info('DeleteStudy failed.')
+      raise
+
   def _obtain_long_running_operation(self, resp):
     """Obtain the long-running operation."""
     op_id = resp['name'].split('/')[-1]
@@ -277,6 +316,9 @@ class _OptimizerClient(object):
   def _make_trial_name(self, trial_id):
     return 'projects/{}/locations/{}/studies/{}/trials/{}'.format(
         self.project_id, self.region, self.study_id, trial_id)
+
+  def _make_parent_name(self):
+    return 'projects/{}/locations/{}'.format(self.project_id, self.region)
 
 
 def create_or_load_study(project_id, region, study_id,
