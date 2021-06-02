@@ -266,7 +266,8 @@ def _convert_hyperparams_to_optimizer_params(
 
 def format_objective(
     objective,
-    direction = None):
+    direction = None
+):
   """Formats objective to a list of oracle_module.Objective.
 
   Arguments:

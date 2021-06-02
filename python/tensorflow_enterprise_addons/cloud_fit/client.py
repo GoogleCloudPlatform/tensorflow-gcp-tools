@@ -21,7 +21,7 @@ Python module, but only available as an in-memory object of the calling process.
 
 import datetime
 import os
-from typing import Text, Dict, Sequence, Any, Generator
+from typing import Any, Dict, Generator, Optional, Sequence, Text
 from absl import logging
 import cloudpickle
 from googleapiclient import discovery
