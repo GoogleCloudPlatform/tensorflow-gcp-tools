@@ -49,7 +49,7 @@ as a backend to get suggestions of hyperparameters and run trials.
 
 ```python
 from tensorflow_enterprise_addons import cloudtuner
-import kerastuner
+import keras_tuner
 import tensorflow as tf
 
 (x, y), (val_x, val_y) = tf.keras.datasets.mnist.load_data()
@@ -69,7 +69,7 @@ def build_model(hp):
     return model
 
 # Configure the search space
-HPS = kerastuner.engine.hyperparameters.HyperParameters()
+HPS = keras_tuner.engine.hyperparameters.HyperParameters()
 HPS.Float('learning_rate', min_value=1e-4, max_value=1e-2, sampling='log')
 HPS.Int('num_layers', 2, 10)
 

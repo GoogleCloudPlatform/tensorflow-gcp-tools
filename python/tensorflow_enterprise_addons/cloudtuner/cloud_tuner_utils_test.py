@@ -17,8 +17,8 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from kerastuner.engine import hyperparameters as hp_module
-from kerastuner.engine import oracle as oracle_module
+from keras_tuner.engine import hyperparameters as hp_module
+from keras_tuner.engine import oracle as oracle_module
 import tensorflow as tf
 from tensorflow_enterprise_addons.cloudtuner import cloud_tuner_utils
 

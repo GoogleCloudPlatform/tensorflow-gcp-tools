@@ -18,9 +18,9 @@ from __future__ import division
 from __future__ import print_function
 
 import time
-from kerastuner.engine import hyperparameters as hp_module
-from kerastuner.engine import oracle as oracle_module
-from kerastuner.engine import trial as trial_module
+from keras_tuner.engine import hyperparameters as hp_module
+from keras_tuner.engine import oracle as oracle_module
+from keras_tuner.engine import trial as trial_module
 
 import mock
 import tensorflow as tf

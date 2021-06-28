@@ -21,9 +21,9 @@ from __future__ import print_function
 
 from typing import Any, Dict, List, Optional, Text, Union
 
-from kerastuner.engine import hyperparameters as hp_module
-from kerastuner.engine import metrics_tracking
-from kerastuner.engine import oracle as oracle_module
+from keras_tuner.engine import hyperparameters as hp_module
+from keras_tuner.engine import metrics_tracking
+from keras_tuner.engine import oracle as oracle_module
 
 # CAIP Optimizer constants.
 _DISCRETE = 'DISCRETE'
@@ -52,7 +52,7 @@ _SAMPLING_REVERSE_LOG = 'reverse_log'
 def make_study_config(
     objective,
     hyperparams):
-  """Generates CAIP Optimizer StudyConfig from kerastuner objective, max_trials and hyperparameters.
+  """Generates CAIP Optimizer StudyConfig from keras_tuner objective, max_trials and hyperparameters.
 
   Arguments:
     objective: String or `oracle_module.Objective`. If a string, the direction
