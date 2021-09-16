@@ -4,10 +4,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+from unittest import mock
+
 from googleapiclient import errors
 from googleapiclient import http as googleapiclient_http
 import httplib2
-import mock
 import tensorflow as tf
 from tensorflow_enterprise_addons import version
 from tensorflow_enterprise_addons.cloudtuner import optimizer_client
