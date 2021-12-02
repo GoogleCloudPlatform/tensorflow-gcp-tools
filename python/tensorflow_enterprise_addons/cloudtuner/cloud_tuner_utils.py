@@ -16,7 +16,6 @@
 # pylint: disable=protected-access
 from __future__ import absolute_import
 from __future__ import division
-
 from __future__ import print_function
 
 from typing import Any, Dict, List, Optional, Text, Union
