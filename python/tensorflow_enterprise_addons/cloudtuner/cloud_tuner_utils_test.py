@@ -13,10 +13,6 @@
 # limitations under the License.
 """Tests for cloud_tuner_utils."""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
 from keras_tuner.engine import hyperparameters as hp_module
 from keras_tuner.engine import oracle as oracle_module
 import tensorflow as tf
