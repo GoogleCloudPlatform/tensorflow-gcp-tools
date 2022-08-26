@@ -33,26 +33,24 @@ from tensorflow_enterprise_addons.cloud_fit import utils
 MULTI_WORKER_MIRRORED_STRATEGY_NAME = utils.MULTI_WORKER_MIRRORED_STRATEGY_NAME
 MIRRORED_STRATEGY_NAME = utils.MIRRORED_STRATEGY_NAME
 SUPPORTED_DISTRIBUTION_STRATEGIES = utils.SUPPORTED_DISTRIBUTION_STRATEGIES
-
-FLAGS = flags.FLAGS
-flags.DEFINE_string(
+_DISTRIBUTION_STRATEGY = flags.DEFINE_string(
     'distribution_strategy', None,
     'String representing distribution strategy. Must match DistributionStrategy values'
 )
 
-flags.DEFINE_string(
+_REMOTE_DIR = flags.DEFINE_string(
     'remote_dir', None,
     'Temporary cloud storage folder for transferring model and dataset')
 
 
 def main(unused_argv):
   logging.set_verbosity(logging.INFO)
-  if FLAGS.distribution_strategy not in SUPPORTED_DISTRIBUTION_STRATEGIES:
+  if _DISTRIBUTION_STRATEGY.value not in SUPPORTED_DISTRIBUTION_STRATEGIES:
     raise ValueError('{} is not supported. Supported Strategies are {}'.format(
-        FLAGS.distribution_strategy,
+        _DISTRIBUTION_STRATEGY.value,
         list(SUPPORTED_DISTRIBUTION_STRATEGIES.keys())))
 
-  run(FLAGS.remote_dir, FLAGS.distribution_strategy)
+  run(_REMOTE_DIR.value, _DISTRIBUTION_STRATEGY.value)
 
 
 def run(remote_dir, distribution_strategy_text):
