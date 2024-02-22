@@ -18,12 +18,12 @@ cc_library(
         "stackdriver_client.h",
     ],
     deps = [
-        "@com_google_protobuf//:protobuf_headers",
+        "@com_github_grpc_grpc//:grpc++_public_hdrs",
         "@com_google_absl//absl/strings",
         "@com_google_absl//absl/time",
+        "@com_google_protobuf//:protobuf_headers",
         "@org_tensorflow//tensorflow/core:lib",
         "@org_tensorflow//tensorflow/core/distributed_runtime/rpc:grpc_util",
-        "@com_github_grpc_grpc//:grpc++_public_hdrs",
     ] + gcp_monitoring_grpc_deps() + gcp_monitoring_proto_header_deps(),
 )
 
